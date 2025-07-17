@@ -24,10 +24,8 @@ Uma aplicação web estática para descobrir filmes, séries e mini-séries de a
 1. Clone o repositório
 2. Instale as dependências: `npm install`
 3. Execute o projeto: `npm run dev`
-4. Obtenha uma chave de API gratuita da TMDb:
-   - Acesse [TMDb](https://www.themoviedb.org/settings/api)
-   - Crie uma conta e solicite uma chave de API
-   - Cole a chave na interface da aplicação
+
+A aplicação já está configurada com uma chave API da TMDb para uso imediato.
 
 ## Deploy
 
@@ -42,4 +40,4 @@ Este projeto foi desenvolvido por Ruben Araujo.
 
 ## Nota sobre a API
 
-A aplicação utiliza a API da TMDb, que é gratuita para uso não-comercial. Os dados são obtidos diretamente da TMDb sem armazenamento em servidor próprio.
+A aplicação utiliza a API da TMDb para obter dados de filmes e séries. Os dados são obtidos diretamente da TMDb sem armazenamento em servidor próprio.

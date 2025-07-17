@@ -2,7 +2,7 @@
 // Note: API key needs to be provided by the user
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const TMDB_API_KEY = ''; // To be set by user
+const TMDB_API_KEY = '9fd38d064c1422abdae6485d2d64ec0f'; // Default API key
 
 export const setTmdbApiKey = (apiKey: string) => {
   // In a real app, you would store this more securely
@@ -10,7 +10,7 @@ export const setTmdbApiKey = (apiKey: string) => {
 };
 
 export const getTmdbApiKey = (): string => {
-  return (window as any).TMDB_API_KEY || '';
+  return (window as any).TMDB_API_KEY || TMDB_API_KEY;
 };
 
 export const isApiKeySet = (): boolean => {

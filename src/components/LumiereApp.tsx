@@ -4,13 +4,11 @@ import Header from "./Header";
 import FilterPanel from "./FilterPanel";
 import ContentCard from "./ContentCard";
 import Footer from "./Footer";
-import ApiKeySetup from "./ApiKeySetup";
+
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
-import { Sparkles, AlertCircle } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { 
-  setTmdbApiKey, 
-  isApiKeySet, 
   getRandomSuggestion, 
   getGenres, 
   type ContentItem, 
@@ -19,7 +17,6 @@ import {
 
 const LumiereApp = () => {
   const { toast } = useToast();
-  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
   const [content, setContent] = useState<ContentItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [genres, setGenres] = useState<{ id: number; name: string; }[]>([]);
@@ -32,36 +29,33 @@ const LumiereApp = () => {
   });
 
   useEffect(() => {
-    setApiKeyConfigured(isApiKeySet());
-  }, []);
+    // Load genres for both movies and TV shows on app start
+    const loadGenres = async () => {
+      try {
+        const [movieGenres, tvGenres] = await Promise.all([
+          getGenres('movie'),
+          getGenres('tv')
+        ]);
+        
+        // Merge and deduplicate genres
+        const allGenres = [...movieGenres, ...tvGenres];
+        const uniqueGenres = allGenres.filter((genre, index, self) => 
+          index === self.findIndex(g => g.id === genre.id)
+        );
+        
+        setGenres(uniqueGenres);
+      } catch (error) {
+        console.error('Error loading genres:', error);
+        toast({
+          title: "Erro ao carregar géneros",
+          description: "Não foi possível carregar a lista de géneros.",
+          variant: "destructive",
+        });
+      }
+    };
 
-  const handleApiKeySet = async (apiKey: string) => {
-    setTmdbApiKey(apiKey);
-    setApiKeyConfigured(true);
-    
-    // Load genres for both movies and TV shows
-    try {
-      const [movieGenres, tvGenres] = await Promise.all([
-        getGenres('movie'),
-        getGenres('tv')
-      ]);
-      
-      // Merge and deduplicate genres
-      const allGenres = [...movieGenres, ...tvGenres];
-      const uniqueGenres = allGenres.filter((genre, index, self) => 
-        index === self.findIndex(g => g.id === genre.id)
-      );
-      
-      setGenres(uniqueGenres);
-    } catch (error) {
-      console.error('Error loading genres:', error);
-      toast({
-        title: "Erro ao carregar géneros",
-        description: "Não foi possível carregar a lista de géneros.",
-        variant: "destructive",
-      });
-    }
-  };
+    loadGenres();
+  }, [toast]);
 
   const handleFiltersChange = (filters: Filters) => {
     setCurrentFilters(filters);
@@ -70,15 +64,6 @@ const LumiereApp = () => {
   };
 
   const handleGetSuggestion = async () => {
-    if (!isApiKeySet()) {
-      toast({
-        title: "API Key necessária",
-        description: "Configure sua chave de API primeiro.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
       const suggestion = await getRandomSuggestion(currentFilters);
@@ -108,9 +93,6 @@ const LumiereApp = () => {
     }
   };
 
-  if (!apiKeyConfigured) {
-    return <ApiKeySetup onApiKeySet={handleApiKeySet} />;
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
