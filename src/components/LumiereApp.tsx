@@ -1,0 +1,188 @@
+import { useState, useEffect } from "react";
+import { useToast } from "../hooks/use-toast";
+import Header from "./Header";
+import FilterPanel from "./FilterPanel";
+import ContentCard from "./ContentCard";
+import Footer from "./Footer";
+import ApiKeySetup from "./ApiKeySetup";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+import { Sparkles, AlertCircle } from "lucide-react";
+import { 
+  setTmdbApiKey, 
+  isApiKeySet, 
+  getRandomSuggestion, 
+  getGenres, 
+  type ContentItem, 
+  type Filters 
+} from "../services/tmdb";
+
+const LumiereApp = () => {
+  const { toast } = useToast();
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
+  const [content, setContent] = useState<ContentItem | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [genres, setGenres] = useState<{ id: number; name: string; }[]>([]);
+  const [currentFilters, setCurrentFilters] = useState<Filters>({
+    contentType: 'movie',
+    genres: [],
+    yearFrom: '',
+    yearTo: '',
+    language: ''
+  });
+
+  useEffect(() => {
+    setApiKeyConfigured(isApiKeySet());
+  }, []);
+
+  const handleApiKeySet = async (apiKey: string) => {
+    setTmdbApiKey(apiKey);
+    setApiKeyConfigured(true);
+    
+    // Load genres for both movies and TV shows
+    try {
+      const [movieGenres, tvGenres] = await Promise.all([
+        getGenres('movie'),
+        getGenres('tv')
+      ]);
+      
+      // Merge and deduplicate genres
+      const allGenres = [...movieGenres, ...tvGenres];
+      const uniqueGenres = allGenres.filter((genre, index, self) => 
+        index === self.findIndex(g => g.id === genre.id)
+      );
+      
+      setGenres(uniqueGenres);
+    } catch (error) {
+      console.error('Error loading genres:', error);
+      toast({
+        title: "Erro ao carregar géneros",
+        description: "Não foi possível carregar a lista de géneros.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFiltersChange = (filters: Filters) => {
+    setCurrentFilters(filters);
+    // Clear current content when filters change
+    setContent(null);
+  };
+
+  const handleGetSuggestion = async () => {
+    if (!isApiKeySet()) {
+      toast({
+        title: "API Key necessária",
+        description: "Configure sua chave de API primeiro.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const suggestion = await getRandomSuggestion(currentFilters);
+      
+      if (suggestion) {
+        setContent(suggestion);
+        toast({
+          title: "Nova sugestão!",
+          description: `${suggestion.title} foi sugerido para você.`,
+        });
+      } else {
+        toast({
+          title: "Nenhuma sugestão encontrada",
+          description: "Tente ajustar os filtros para encontrar mais conteúdo.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error getting suggestion:', error);
+      toast({
+        title: "Erro ao buscar sugestão",
+        description: "Tente novamente em alguns momentos.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!apiKeyConfigured) {
+    return <ApiKeySetup onApiKeySet={handleApiKeySet} />;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-4 gap-8">
+          {/* Filters Panel */}
+          <div className="lg:col-span-1">
+            <FilterPanel
+              onFiltersChange={handleFiltersChange}
+              onGetSuggestion={handleGetSuggestion}
+              isLoading={isLoading}
+            />
+          </div>
+
+          {/* Content Area */}
+          <div className="lg:col-span-3">
+            {content ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">
+                    Sugestão para você
+                  </h2>
+                  <Button
+                    variant="outline"
+                    onClick={handleGetSuggestion}
+                    disabled={isLoading}
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isLoading ? "A sugerir..." : "Nova sugestão"}
+                  </Button>
+                </div>
+                
+                <ContentCard
+                  content={content}
+                  contentType={currentFilters.contentType}
+                  genres={genres}
+                />
+              </div>
+            ) : (
+              <Card className="shadow-card">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center mb-4">
+                    <Sparkles className="w-8 h-8 text-primary-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    Pronto para descobrir algo incrível?
+                  </h3>
+                  <p className="text-muted-foreground mb-6 max-w-md">
+                    Configure os filtros ao lado e clique em "Sugerir conteúdo" para descobrir 
+                    filmes, séries e mini-séries de alta qualidade personalizados para você.
+                  </p>
+                  <Button
+                    variant="spotlight"
+                    size="lg"
+                    onClick={handleGetSuggestion}
+                    disabled={isLoading}
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isLoading ? "A sugerir..." : "Começar agora"}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default LumiereApp;

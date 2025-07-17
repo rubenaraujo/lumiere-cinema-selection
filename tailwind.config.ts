@@ -52,6 +52,16 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Custom Lumiere colors
+				gold: {
+					DEFAULT: 'hsl(var(--gold))',
+					muted: 'hsl(var(--gold-muted))'
+				},
+				cinema: {
+					dark: 'hsl(var(--cinema-dark))',
+					darker: 'hsl(var(--cinema-darker))'
+				},
+				spotlight: 'hsl(var(--spotlight))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

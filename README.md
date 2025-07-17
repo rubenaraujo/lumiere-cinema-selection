@@ -1,73 +1,45 @@
-# Welcome to your Lovable project
+# Lumiere - Descobrir Filmes e Séries de Qualidade
 
-## Project info
+Uma aplicação web estática para descobrir filmes, séries e mini-séries de alta qualidade usando a API da TMDb.
 
-**URL**: https://lovable.dev/projects/97cdeb2f-3e86-4131-9407-41de2f87fda1
+## Funcionalidades
 
-## How can I edit this code?
+- **Filtragem inteligente**: Selecione tipo de conteúdo (filme/série), géneros, intervalo de datas e idioma
+- **Sugestões de qualidade**: Conteúdo com pontuação mínima de 7.0 e número significativo de avaliações
+- **Sugestões aleatórias**: Descubra conteúdo novo com base nos seus filtros
+- **Detalhes completos**: Veja sinopse, elenco, avaliações e informações técnicas
+- **Design responsivo**: Interface otimizada para desktop e mobile
+- **Tema escuro**: Design cinematográfico elegante
 
-There are several ways of editing your application.
+## Tecnologias Utilizadas
 
-**Use Lovable**
+- React 18 com TypeScript
+- Tailwind CSS para estilização
+- Shadcn/ui para componentes
+- TMDb API para dados de filmes e séries
+- Vite para build e desenvolvimento
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/97cdeb2f-3e86-4131-9407-41de2f87fda1) and start prompting.
+## Configuração
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Clone o repositório
+2. Instale as dependências: `npm install`
+3. Execute o projeto: `npm run dev`
+4. Obtenha uma chave de API gratuita da TMDb:
+   - Acesse [TMDb](https://www.themoviedb.org/settings/api)
+   - Crie uma conta e solicite uma chave de API
+   - Cole a chave na interface da aplicação
 
-**Use your preferred IDE**
+## Deploy
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Este projeto está configurado para deploy estático no GitHub Pages:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Build o projeto: `npm run build`
+2. Deploy a pasta `dist` para o GitHub Pages
 
-Follow these steps:
+## Licença
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Este projeto foi desenvolvido por Ruben Araujo.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Nota sobre a API
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/97cdeb2f-3e86-4131-9407-41de2f87fda1) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+A aplicação utiliza a API da TMDb, que é gratuita para uso não-comercial. Os dados são obtidos diretamente da TMDb sem armazenamento em servidor próprio.
