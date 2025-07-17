@@ -48,7 +48,7 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
-  const [language, setLanguage] = useState("");
+  const [language, setLanguage] = useState("all");
 
   const handleGenreChange = (genreId: number, checked: boolean) => {
     const newSelectedGenres = checked
@@ -74,8 +74,8 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
     setSelectedGenres([]);
     setYearFrom("");
     setYearTo("");
-    setLanguage("");
-    updateFilters("movie", [], "", "", "");
+    setLanguage("all");
+    updateFilters("movie", [], "", "", "all");
   };
 
   const handleContentTypeChange = (value: string) => {
@@ -182,7 +182,7 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
               <SelectValue placeholder="Qualquer idioma" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Qualquer idioma</SelectItem>
+              <SelectItem value="all">Qualquer idioma</SelectItem>
               {languages.map((lang) => (
                 <SelectItem key={lang.code} value={lang.code}>
                   {lang.name}

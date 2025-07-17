@@ -142,7 +142,7 @@ export const discoverContent = async (
     }
   }
 
-  if (language) {
+  if (language && language !== 'all') {
     params.with_original_language = language;
   }
 
