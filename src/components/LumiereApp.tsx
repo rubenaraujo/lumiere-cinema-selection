@@ -25,7 +25,7 @@ const LumiereApp = () => {
     genres: [],
     yearFrom: '',
     yearTo: '',
-    language: 'all'
+    language: 'en'
   });
 
   useEffect(() => {
