@@ -3,6 +3,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Checkbox } from "./ui/checkbox";
+import { Slider } from "./ui/slider";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
@@ -13,10 +14,12 @@ interface AdvancedFiltersProps {
   yearFrom: string;
   yearTo: string;
   language: string;
+  minRating: number;
   onGenreChange: (genreId: number, checked: boolean) => void;
   onYearFromChange: (value: string) => void;
   onYearToChange: (value: string) => void;
   onLanguageChange: (value: string) => void;
+  onMinRatingChange: (value: number) => void;
   onReset: () => void;
 }
 
@@ -55,10 +58,12 @@ const AdvancedFilters = ({
   yearFrom,
   yearTo,
   language,
+  minRating,
   onGenreChange,
   onYearFromChange,
   onYearToChange,
   onLanguageChange,
+  onMinRatingChange,
   onReset
 }: AdvancedFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,6 +80,22 @@ const AdvancedFilters = ({
         
         <CollapsibleContent>
           <CardContent className="space-y-6 pt-0">
+            {/* Minimum Rating */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label className="text-sm font-medium">Pontuação mínima</Label>
+                <span className="text-sm text-muted-foreground">{minRating}/10</span>
+              </div>
+              <Slider
+                value={[minRating]}
+                onValueChange={(value) => onMinRatingChange(value[0])}
+                max={10}
+                min={0}
+                step={0.5}
+                className="w-full"
+              />
+            </div>
+
             {/* Genres */}
             <div className="space-y-3">
               <Label>Géneros</Label>

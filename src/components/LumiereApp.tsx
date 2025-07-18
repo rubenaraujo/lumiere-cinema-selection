@@ -25,7 +25,8 @@ const LumiereApp = () => {
     genres: [],
     yearFrom: '',
     yearTo: '',
-    language: 'en'
+    language: 'en',
+    minRating: 7
   });
 
   useEffect(() => {
@@ -72,7 +73,7 @@ const LumiereApp = () => {
         setContent(suggestion);
         toast({
           title: "Nova sugestão!",
-          description: `${suggestion.title} foi sugerido para você.`,
+          description: `${suggestion.title} foi sugerido para ti.`,
         });
       } else {
         toast({
@@ -115,7 +116,7 @@ const LumiereApp = () => {
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold text-foreground">
-                    Sugestão para você
+                    Sugestão para ti
                   </h2>
                   <Button
                     variant="outline"
@@ -143,8 +144,8 @@ const LumiereApp = () => {
                     Pronto para descobrir algo incrível?
                   </h3>
                   <p className="text-muted-foreground mb-6 max-w-md">
-                    Configure os filtros ao lado e clique em "Sugerir conteúdo" para descobrir 
-                    filmes, séries e mini-séries de alta qualidade personalizados para você.
+                    Configura os filtros ao lado e clica em "Sugerir conteúdo" para descobrir 
+                    filmes, séries e mini-séries de alta qualidade personalizados para ti.
                   </p>
                   <Button
                     variant="spotlight"

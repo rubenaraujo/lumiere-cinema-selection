@@ -77,6 +77,7 @@ export interface Filters {
   yearFrom: string;
   yearTo: string;
   language: string;
+  minRating: number;
 }
 
 const makeRequest = async (endpoint: string, params: Record<string, any> = {}) => {

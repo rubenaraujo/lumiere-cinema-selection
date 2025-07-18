@@ -16,14 +16,16 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
   const [language, setLanguage] = useState("en");
+  const [minRating, setMinRating] = useState(7);
 
-  const updateFilters = (type: string, genres: number[], from: string, to: string, lang: string) => {
+  const updateFilters = (type: string, genres: number[], from: string, to: string, lang: string, rating: number) => {
     onFiltersChange({
       contentType: type,
       genres,
       yearFrom: from,
       yearTo: to,
-      language: lang
+      language: lang,
+      minRating: rating
     });
   };
 
@@ -33,12 +35,13 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
     setYearFrom("");
     setYearTo("");
     setLanguage("en");
-    updateFilters("movie", [], "", "", "en");
+    setMinRating(7);
+    updateFilters("movie", [], "", "", "en", 7);
   };
 
   const handleContentTypeChange = (value: string) => {
     setContentType(value);
-    updateFilters(value, selectedGenres, yearFrom, yearTo, language);
+    updateFilters(value, selectedGenres, yearFrom, yearTo, language, minRating);
   };
 
   const handleGenreChange = (genreId: number, checked: boolean) => {
@@ -47,22 +50,27 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
       : selectedGenres.filter(id => id !== genreId);
     
     setSelectedGenres(newSelectedGenres);
-    updateFilters(contentType, newSelectedGenres, yearFrom, yearTo, language);
+    updateFilters(contentType, newSelectedGenres, yearFrom, yearTo, language, minRating);
   };
 
   const handleYearFromChange = (value: string) => {
     setYearFrom(value);
-    updateFilters(contentType, selectedGenres, value, yearTo, language);
+    updateFilters(contentType, selectedGenres, value, yearTo, language, minRating);
   };
 
   const handleYearToChange = (value: string) => {
     setYearTo(value);
-    updateFilters(contentType, selectedGenres, yearFrom, value, language);
+    updateFilters(contentType, selectedGenres, yearFrom, value, language, minRating);
   };
 
   const handleLanguageChange = (value: string) => {
     setLanguage(value);
-    updateFilters(contentType, selectedGenres, yearFrom, yearTo, value);
+    updateFilters(contentType, selectedGenres, yearFrom, yearTo, value, minRating);
+  };
+
+  const handleMinRatingChange = (value: number) => {
+    setMinRating(value);
+    updateFilters(contentType, selectedGenres, yearFrom, yearTo, language, value);
   };
 
   return (
@@ -82,10 +90,12 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
         yearFrom={yearFrom}
         yearTo={yearTo}
         language={language}
+        minRating={minRating}
         onGenreChange={handleGenreChange}
         onYearFromChange={handleYearFromChange}
         onYearToChange={handleYearToChange}
         onLanguageChange={handleLanguageChange}
+        onMinRatingChange={handleMinRatingChange}
         onReset={handleReset}
       />
 
