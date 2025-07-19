@@ -114,19 +114,9 @@ const LumiereApp = () => {
           <div className="lg:col-span-3">
             {content ? (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-foreground">
-                    Sugestão para ti
-                  </h2>
-                  <Button
-                    variant="outline"
-                    onClick={handleGetSuggestion}
-                    disabled={isLoading}
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {isLoading ? "A sugerir..." : "Nova sugestão"}
-                  </Button>
-                </div>
+                <h2 className="text-2xl font-bold text-foreground">
+                  Sugestão para ti
+                </h2>
                 
                 <ContentCard
                   content={content}

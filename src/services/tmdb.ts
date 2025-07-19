@@ -72,7 +72,7 @@ export interface ContentItem {
 }
 
 export interface Filters {
-  contentType: 'movie' | 'tv';
+  contentType: 'movie' | 'tv' | 'miniseries';
   genres: number[];
   yearFrom: string;
   yearTo: string;
@@ -114,21 +114,29 @@ export const discoverContent = async (
   filters: Filters,
   page: number = 1
 ): Promise<TmdbResponse<ContentItem>> => {
-  const { contentType, genres, yearFrom, yearTo, language } = filters;
+  const { contentType, genres, yearFrom, yearTo, language, minRating } = filters;
+  
+  // For miniseries, we search TV shows with specific constraints
+  const searchType = contentType === 'miniseries' ? 'tv' : contentType;
   
   const params: Record<string, any> = {
     page,
-    'vote_average.gte': 7.0, // Minimum rating for quality content
+    'vote_average.gte': minRating, // Use the slider value
     'vote_count.gte': 100,   // Minimum vote count for reliability
     sort_by: 'vote_average.desc',
   };
+
+  // Add miniseries specific constraints
+  if (contentType === 'miniseries') {
+    params['with_type'] = '2'; // Miniseries type
+  }
 
   if (genres.length > 0) {
     params.with_genres = genres.join(',');
   }
 
   if (yearFrom) {
-    if (contentType === 'movie') {
+    if (searchType === 'movie') {
       params['primary_release_date.gte'] = `${yearFrom}-01-01`;
     } else {
       params['first_air_date.gte'] = `${yearFrom}-01-01`;
@@ -136,7 +144,7 @@ export const discoverContent = async (
   }
 
   if (yearTo) {
-    if (contentType === 'movie') {
+    if (searchType === 'movie') {
       params['primary_release_date.lte'] = `${yearTo}-12-31`;
     } else {
       params['first_air_date.lte'] = `${yearTo}-12-31`;
@@ -147,7 +155,7 @@ export const discoverContent = async (
     params.with_original_language = language;
   }
 
-  const response = await makeRequest(`/discover/${contentType}`, params);
+  const response = await makeRequest(`/discover/${searchType}`, params);
   
   // Normalize the response to have consistent field names
   const normalizedResults = response.results.map((item: Movie | TvShow) => ({
