@@ -16,8 +16,7 @@ interface AdvancedFiltersProps {
   language: string;
   minRating: number;
   onGenreChange: (genreId: number, checked: boolean) => void;
-  onYearFromChange: (value: string) => void;
-  onYearToChange: (value: string) => void;
+  onYearRangeChange: (yearFrom: number, yearTo: number) => void;
   onLanguageChange: (value: string) => void;
   onMinRatingChange: (value: number) => void;
   onReset: () => void;
@@ -60,8 +59,7 @@ const AdvancedFilters = ({
   language,
   minRating,
   onGenreChange,
-  onYearFromChange,
-  onYearToChange,
+  onYearRangeChange,
   onLanguageChange,
   onMinRatingChange,
   onReset
@@ -119,34 +117,21 @@ const AdvancedFilters = ({
             </div>
 
             {/* Year Range */}
-            <div className="space-y-2">
-              <Label>Ano de lançamento</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="year-from" className="text-xs text-muted-foreground">De</Label>
-                  <Input
-                    id="year-from"
-                    type="number"
-                    placeholder="1990"
-                    value={yearFrom}
-                    onChange={(e) => onYearFromChange(e.target.value)}
-                    min="1900"
-                    max={new Date().getFullYear()}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="year-to" className="text-xs text-muted-foreground">Até</Label>
-                  <Input
-                    id="year-to"
-                    type="number"
-                    placeholder={new Date().getFullYear().toString()}
-                    value={yearTo}
-                    onChange={(e) => onYearToChange(e.target.value)}
-                    min="1900"
-                    max={new Date().getFullYear()}
-                  />
-                </div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Ano de lançamento</Label>
+                <span className="text-sm text-muted-foreground">
+                  {yearFrom || '1900'} - {yearTo || new Date().getFullYear()}
+                </span>
               </div>
+              <Slider
+                value={[parseInt(yearFrom) || 1900, parseInt(yearTo) || new Date().getFullYear()]}
+                onValueChange={(value) => onYearRangeChange(value[0], value[1])}
+                max={new Date().getFullYear()}
+                min={1900}
+                step={1}
+                className="w-full"
+              />
             </div>
 
             {/* Language */}

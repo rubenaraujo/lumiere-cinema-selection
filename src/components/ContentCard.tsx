@@ -1,7 +1,7 @@
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { Calendar, ExternalLink, Star, Users } from "lucide-react";
+import { Calendar, ExternalLink, Star, Users, Play, User } from "lucide-react";
 
 interface ContentCardProps {
   content: {
@@ -17,6 +17,8 @@ interface ContentCardProps {
     genre_ids: number[];
     original_language: string;
     popularity: number;
+    created_by?: { id: number; name: string; }[];
+    production_companies?: { id: number; name: string; }[];
   };
   contentType: string;
   genres: { id: number; name: string; }[];
@@ -35,6 +37,10 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
     .slice(0, 3);
 
   const tmdbUrl = `https://www.themoviedb.org/${contentType}/${content.id}`;
+  const trailerUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(content.title + ' trailer')}`;
+  
+  const creators = content.created_by?.slice(0, 2) || 
+    content.production_companies?.slice(0, 2) || [];
 
   return (
     <Card className="w-full max-w-4xl shadow-card overflow-hidden">
@@ -131,6 +137,23 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
               </p>
             </div>
 
+            {/* Creator Info */}
+            {creators.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  {contentType === 'movie' ? 'Produção' : 'Criado por'}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {creators.map((creator, index) => (
+                    <Badge key={index} variant="outline">
+                      {creator.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Additional Info */}
             <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
               <div>
@@ -143,16 +166,25 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
               </div>
             </div>
 
-            {/* Action Button */}
-            <div className="pt-4">
+            {/* Action Buttons */}
+            <div className="pt-4 space-y-3">
               <Button
-                variant="outline"
                 size="lg"
                 className="w-full"
+                onClick={() => window.open(trailerUrl, '_blank')}
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Ver Trailer
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-muted-foreground hover:text-foreground"
                 onClick={() => window.open(tmdbUrl, '_blank')}
               >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Ver mais detalhes no TMDb
+                <ExternalLink className="w-3 h-3 mr-2" />
+                Mais detalhes no TMDb
               </Button>
             </div>
           </div>

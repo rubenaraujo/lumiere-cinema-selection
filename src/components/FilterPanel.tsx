@@ -53,14 +53,12 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
     updateFilters(contentType, newSelectedGenres, yearFrom, yearTo, language, minRating);
   };
 
-  const handleYearFromChange = (value: string) => {
-    setYearFrom(value);
-    updateFilters(contentType, selectedGenres, value, yearTo, language, minRating);
-  };
-
-  const handleYearToChange = (value: string) => {
-    setYearTo(value);
-    updateFilters(contentType, selectedGenres, yearFrom, value, language, minRating);
+  const handleYearRangeChange = (yearFrom: number, yearTo: number) => {
+    const fromStr = yearFrom.toString();
+    const toStr = yearTo.toString();
+    setYearFrom(fromStr);
+    setYearTo(toStr);
+    updateFilters(contentType, selectedGenres, fromStr, toStr, language, minRating);
   };
 
   const handleLanguageChange = (value: string) => {
@@ -92,8 +90,7 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
         language={language}
         minRating={minRating}
         onGenreChange={handleGenreChange}
-        onYearFromChange={handleYearFromChange}
-        onYearToChange={handleYearToChange}
+        onYearRangeChange={handleYearRangeChange}
         onLanguageChange={handleLanguageChange}
         onMinRatingChange={handleMinRatingChange}
         onReset={handleReset}
