@@ -121,14 +121,14 @@ const AdvancedFilters = ({
               <div className="flex justify-between items-center">
                 <Label>Ano de lançamento</Label>
                 <span className="text-sm text-muted-foreground">
-                  {yearFrom || '1900'} - {yearTo || new Date().getFullYear()}
+                  {yearFrom || '1970'} - {yearTo || new Date().getFullYear()}
                 </span>
               </div>
               <Slider
-                value={[parseInt(yearFrom) || 1900, parseInt(yearTo) || new Date().getFullYear()]}
+                value={[parseInt(yearFrom) || 1970, parseInt(yearTo) || new Date().getFullYear()]}
                 onValueChange={(value) => onYearRangeChange(value[0], value[1])}
                 max={new Date().getFullYear()}
-                min={1900}
+                min={1970}
                 step={1}
                 className="w-full"
               />

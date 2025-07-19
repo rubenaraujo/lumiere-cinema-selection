@@ -155,19 +155,23 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
             )}
 
             {/* Additional Info */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+            <div className="grid grid-cols-1 gap-4 p-4 bg-muted/50 rounded-lg">
               <div>
                 <span className="text-sm font-medium text-foreground">Idioma Original</span>
                 <p className="text-sm text-muted-foreground">{content.original_language.toUpperCase()}</p>
               </div>
-              <div>
-                <span className="text-sm font-medium text-foreground">Popularidade</span>
-                <p className="text-sm text-muted-foreground">{Math.round(content.popularity)}</p>
-              </div>
+              {creators.length > 0 && (
+                <div>
+                  <span className="text-sm font-medium text-foreground">
+                    {contentType === 'movie' ? 'Produção' : 'Criador'}
+                  </span>
+                  <p className="text-sm text-muted-foreground">{creators[0].name}</p>
+                </div>
+              )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="pt-4 space-y-3">
+            {/* Action Button */}
+            <div className="pt-4">
               <Button
                 size="lg"
                 className="w-full"
@@ -175,16 +179,6 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
               >
                 <Play className="w-4 h-4 mr-2" />
                 Ver Trailer
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-muted-foreground hover:text-foreground"
-                onClick={() => window.open(tmdbUrl, '_blank')}
-              >
-                <ExternalLink className="w-3 h-3 mr-2" />
-                Mais detalhes no TMDb
               </Button>
             </div>
           </div>
