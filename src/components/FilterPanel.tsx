@@ -53,9 +53,9 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
     updateFilters(contentType, newSelectedGenres, yearFrom, yearTo, language, minRating);
   };
 
-  const handleYearRangeChange = (yearFrom: number, yearTo: number) => {
-    const fromStr = yearFrom.toString();
-    const toStr = yearTo.toString();
+  const handleYearRangeChange = (yearFromValue: number, yearToValue: number) => {
+    const fromStr = yearFromValue.toString();
+    const toStr = yearToValue.toString();
     setYearFrom(fromStr);
     setYearTo(toStr);
     updateFilters(contentType, selectedGenres, fromStr, toStr, language, minRating);
