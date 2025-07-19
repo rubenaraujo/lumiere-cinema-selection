@@ -191,3 +191,15 @@ export const getRandomSuggestion = async (filters: Filters): Promise<ContentItem
     return null;
   }
 };
+
+// Get detailed information about a specific content item
+export const getContentDetails = async (
+  contentType: string, 
+  id: number
+): Promise<any> => {
+  const searchType = contentType === 'miniseries' ? 'tv' : contentType;
+  const response = await makeRequest(`/${searchType}/${id}`, {
+    append_to_response: 'credits'
+  });
+  return response;
+};

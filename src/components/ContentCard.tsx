@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { Calendar, ExternalLink, Star, Users, Play, User } from "lucide-react";
+import { Calendar, Star, Users, Play, User } from "lucide-react";
+import { getContentDetails } from "../services/tmdb";
 
 interface ContentCardProps {
   content: {
@@ -25,6 +27,9 @@ interface ContentCardProps {
 }
 
 const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
+  const [director, setDirector] = useState<string>("");
+  const [creator, setCreator] = useState<string>("");
+  
   const imageBaseUrl = "https://image.tmdb.org/t/p/w500";
   const backdropBaseUrl = "https://image.tmdb.org/t/p/w1280";
   
@@ -36,11 +41,31 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
     .filter(Boolean)
     .slice(0, 3);
 
-  const tmdbUrl = `https://www.themoviedb.org/${contentType}/${content.id}`;
   const trailerUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(content.title + ' trailer')}`;
-  
-  const creators = content.created_by?.slice(0, 2) || 
-    content.production_companies?.slice(0, 2) || [];
+
+  // Fetch detailed information to get director/creator
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        const details = await getContentDetails(contentType, content.id);
+        
+        if (contentType === 'movie' && details.credits?.crew) {
+          const directorInfo = details.credits.crew.find((person: any) => person.job === 'Director');
+          if (directorInfo) {
+            setDirector(directorInfo.name);
+          }
+        } else if ((contentType === 'tv' || contentType === 'miniseries') && details.created_by) {
+          if (details.created_by.length > 0) {
+            setCreator(details.created_by[0].name);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching content details:', error);
+      }
+    };
+
+    fetchDetails();
+  }, [content.id, contentType]);
 
   return (
     <Card className="w-full max-w-4xl shadow-card overflow-hidden">
@@ -121,12 +146,15 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
             )}
 
             {/* Genres */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
               {contentGenres.map((genre, index) => (
                 <Badge key={index} variant="secondary">
                   {genre}
                 </Badge>
               ))}
+              <Badge variant="outline" className="text-xs">
+                {content.original_language.toUpperCase()}
+              </Badge>
             </div>
 
             {/* Overview */}
@@ -137,38 +165,19 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
               </p>
             </div>
 
-            {/* Creator Info */}
-            {creators.length > 0 && (
+            {/* Creator/Director Info */}
+            {(director || creator) && (
               <div>
                 <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  {contentType === 'movie' ? 'Produção' : 'Criado por'}
+                  {contentType === 'movie' ? 'Realização' : 'Criação'}
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {creators.map((creator, index) => (
-                    <Badge key={index} variant="outline">
-                      {creator.name}
-                    </Badge>
-                  ))}
-                </div>
+                <Badge variant="outline">
+                  {director || creator}
+                </Badge>
               </div>
             )}
 
-            {/* Additional Info */}
-            <div className="grid grid-cols-1 gap-4 p-4 bg-muted/50 rounded-lg">
-              <div>
-                <span className="text-sm font-medium text-foreground">Idioma Original</span>
-                <p className="text-sm text-muted-foreground">{content.original_language.toUpperCase()}</p>
-              </div>
-              {creators.length > 0 && (
-                <div>
-                  <span className="text-sm font-medium text-foreground">
-                    {contentType === 'movie' ? 'Produção' : 'Criador'}
-                  </span>
-                  <p className="text-sm text-muted-foreground">{creators[0].name}</p>
-                </div>
-              )}
-            </div>
 
             {/* Action Button */}
             <div className="pt-4">
