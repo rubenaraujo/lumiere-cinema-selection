@@ -32,7 +32,6 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
   const [director, setDirector] = useState<string>("");
   const [creator, setCreator] = useState<string>("");
   const [runtime, setRuntime] = useState<number | null>(null);
-  const [countries, setCountries] = useState<string[]>([]);
   
   const imageBaseUrl = "https://image.tmdb.org/t/p/w500";
   const backdropBaseUrl = "https://image.tmdb.org/t/p/w1280";
@@ -72,12 +71,6 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
           if (details.episode_run_time && details.episode_run_time.length > 0) {
             setRuntime(details.episode_run_time[0]);
           }
-        }
-        
-        // Get production countries
-        if (details.production_countries) {
-          const countryNames = details.production_countries.map((country: any) => country.name);
-          setCountries(countryNames.slice(0, 2)); // Limit to 2 countries
         }
       } catch (error) {
         console.error('Error fetching content details:', error);
@@ -215,14 +208,6 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
                   <span className="font-medium text-foreground">Duração:</span>
                   <span className="text-muted-foreground ml-1">
                     {runtime} min{contentType !== 'movie' ? '/episódio' : ''}
-                  </span>
-                </div>
-              )}
-              {countries.length > 0 && (
-                <div>
-                  <span className="font-medium text-foreground">País:</span>
-                  <span className="text-muted-foreground ml-1">
-                    {countries.join(', ')}
                   </span>
                 </div>
               )}

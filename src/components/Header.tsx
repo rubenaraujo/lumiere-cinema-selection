@@ -4,7 +4,7 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <img 
-            src="/lumiere-logo.png" 
+            src="/lovable-uploads/09b66ba3-1e6b-4ca6-946f-5ca77ad70a1a.png" 
             alt="Lumiere Logo" 
             className="w-10 h-10"
           />
