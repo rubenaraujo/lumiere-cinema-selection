@@ -71,10 +71,16 @@ const LumiereApp = () => {
       
       if (suggestion) {
         setContent(suggestion);
-        toast({
-          title: "Nova sugestão!",
-          description: `${suggestion.title} foi sugerido para ti.`,
-        });
+        // Auto scroll to the suggestion after a short delay
+        setTimeout(() => {
+          const contentElement = document.getElementById('content-suggestion');
+          if (contentElement) {
+            contentElement.scrollIntoView({ 
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        }, 100);
       } else {
         toast({
           title: "Nenhuma sugestão encontrada",
@@ -113,7 +119,7 @@ const LumiereApp = () => {
           {/* Content Area */}
           <div className="lg:col-span-3">
             {content ? (
-              <div className="space-y-6">
+              <div id="content-suggestion" className="space-y-6">
                 <h2 className="text-2xl font-bold text-foreground">
                   Sugestão para ti
                 </h2>

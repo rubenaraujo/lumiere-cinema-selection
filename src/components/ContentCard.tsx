@@ -9,6 +9,8 @@ interface ContentCardProps {
   content: {
     id: number;
     title: string;
+    original_title?: string;
+    original_name?: string;
     overview: string;
     poster_path: string;
     backdrop_path: string;
@@ -29,12 +31,16 @@ interface ContentCardProps {
 const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
   const [director, setDirector] = useState<string>("");
   const [creator, setCreator] = useState<string>("");
+  const [runtime, setRuntime] = useState<number | null>(null);
+  const [countries, setCountries] = useState<string[]>([]);
   
   const imageBaseUrl = "https://image.tmdb.org/t/p/w500";
   const backdropBaseUrl = "https://image.tmdb.org/t/p/w1280";
   
   const releaseDate = content.release_date || content.first_air_date;
   const year = releaseDate ? new Date(releaseDate).getFullYear() : "";
+  const originalTitle = content.original_title || content.original_name;
+  const isOriginalTitleDifferent = originalTitle && originalTitle !== content.title;
   
   const contentGenres = content.genre_ids
     .map(id => genres.find(g => g.id === id)?.name)
@@ -43,21 +49,35 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
 
   const trailerUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(content.title + ' trailer')}`;
 
-  // Fetch detailed information to get director/creator
+  // Fetch detailed information to get director/creator and additional info
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         const details = await getContentDetails(contentType, content.id);
         
-        if (contentType === 'movie' && details.credits?.crew) {
-          const directorInfo = details.credits.crew.find((person: any) => person.job === 'Director');
-          if (directorInfo) {
-            setDirector(directorInfo.name);
+        if (contentType === 'movie') {
+          if (details.credits?.crew) {
+            const directorInfo = details.credits.crew.find((person: any) => person.job === 'Director');
+            if (directorInfo) {
+              setDirector(directorInfo.name);
+            }
           }
-        } else if ((contentType === 'tv' || contentType === 'miniseries') && details.created_by) {
-          if (details.created_by.length > 0) {
+          if (details.runtime) {
+            setRuntime(details.runtime);
+          }
+        } else if (contentType === 'tv' || contentType === 'miniseries') {
+          if (details.created_by && details.created_by.length > 0) {
             setCreator(details.created_by[0].name);
           }
+          if (details.episode_run_time && details.episode_run_time.length > 0) {
+            setRuntime(details.episode_run_time[0]);
+          }
+        }
+        
+        // Get production countries
+        if (details.production_countries) {
+          const countryNames = details.production_countries.map((country: any) => country.name);
+          setCountries(countryNames.slice(0, 2)); // Limit to 2 countries
         }
       } catch (error) {
         console.error('Error fetching content details:', error);
@@ -78,9 +98,14 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
           }}
         >
           <div className="absolute bottom-4 left-4 right-4">
-            <h1 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">
+            <h1 className="text-2xl font-bold text-white mb-1 drop-shadow-lg">
               {content.title}
             </h1>
+            {isOriginalTitleDifferent && (
+              <p className="text-sm text-white/80 mb-2 italic drop-shadow">
+                Título original: {originalTitle}
+              </p>
+            )}
             <div className="flex items-center gap-4 text-white/90 text-sm">
               {year && (
                 <div className="flex items-center gap-1">
@@ -123,9 +148,14 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
             {/* Title for mobile (hidden on desktop where it's in backdrop) */}
             {!content.backdrop_path && (
               <div>
-                <h1 className="text-2xl font-bold text-foreground mb-2">
+                <h1 className="text-2xl font-bold text-foreground mb-1">
                   {content.title}
                 </h1>
+                {isOriginalTitleDifferent && (
+                  <p className="text-sm text-muted-foreground mb-2 italic">
+                    Título original: {originalTitle}
+                  </p>
+                )}
                 <div className="flex items-center gap-4 text-muted-foreground text-sm">
                   {year && (
                     <div className="flex items-center gap-1">
@@ -178,6 +208,39 @@ const ContentCard = ({ content, contentType, genres }: ContentCardProps) => {
               </div>
             )}
 
+            {/* Additional Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              {runtime && (
+                <div>
+                  <span className="font-medium text-foreground">Duração:</span>
+                  <span className="text-muted-foreground ml-1">
+                    {runtime} min{contentType !== 'movie' ? '/episódio' : ''}
+                  </span>
+                </div>
+              )}
+              {countries.length > 0 && (
+                <div>
+                  <span className="font-medium text-foreground">País:</span>
+                  <span className="text-muted-foreground ml-1">
+                    {countries.join(', ')}
+                  </span>
+                </div>
+              )}
+              {releaseDate && (
+                <div>
+                  <span className="font-medium text-foreground">
+                    {contentType === 'movie' ? 'Lançamento:' : 'Estreia:'}
+                  </span>
+                  <span className="text-muted-foreground ml-1">
+                    {new Date(releaseDate).toLocaleDateString('pt-PT', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
 
             {/* Action Button */}
             <div className="pt-4">

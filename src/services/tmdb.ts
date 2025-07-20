@@ -59,6 +59,8 @@ interface Genre {
 export interface ContentItem {
   id: number;
   title: string;
+  original_title?: string;
+  original_name?: string;
   overview: string;
   poster_path: string;
   backdrop_path: string;
@@ -161,6 +163,8 @@ export const discoverContent = async (
   const normalizedResults = response.results.map((item: Movie | TvShow) => ({
     ...item,
     title: (item as Movie).title || (item as TvShow).name,
+    original_title: (item as any).original_title,
+    original_name: (item as any).original_name,
     release_date: (item as Movie).release_date,
     first_air_date: (item as TvShow).first_air_date,
   }));
@@ -173,19 +177,30 @@ export const discoverContent = async (
 
 export const getRandomSuggestion = async (filters: Filters): Promise<ContentItem | null> => {
   try {
-    // Get multiple pages to have a better random selection
-    const maxPages = 3;
-    const randomPage = Math.floor(Math.random() * maxPages) + 1;
+    // Get total results first to ensure better random selection
+    const initialResponse = await discoverContent(filters, 1);
     
-    const response = await discoverContent(filters, randomPage);
+    if (initialResponse.results.length === 0) {
+      return null;
+    }
     
-    if (response.results.length === 0) {
+    // Calculate available pages (limit to first 100 pages for performance)
+    const totalPages = Math.min(initialResponse.total_pages, 100);
+    const randomPage = Math.floor(Math.random() * totalPages) + 1;
+    
+    // Get the random page (only if different from page 1)
+    let finalResponse = initialResponse;
+    if (randomPage > 1) {
+      finalResponse = await discoverContent(filters, randomPage);
+    }
+    
+    if (finalResponse.results.length === 0) {
       return null;
     }
     
     // Pick a random item from the results
-    const randomIndex = Math.floor(Math.random() * response.results.length);
-    return response.results[randomIndex];
+    const randomIndex = Math.floor(Math.random() * finalResponse.results.length);
+    return finalResponse.results[randomIndex];
   } catch (error) {
     console.error('Error getting random suggestion:', error);
     return null;
