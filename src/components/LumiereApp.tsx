@@ -150,7 +150,7 @@ const LumiereApp = () => {
                     disabled={isLoading}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
-                    {isLoading ? "A sugerir..." : "Começar agora"}
+                    {isLoading ? "A sugerir..." : "Sugerir conteúdo"}
                   </Button>
                 </CardContent>
               </Card>
@@ -159,19 +159,21 @@ const LumiereApp = () => {
         </div>
       </main>
 
-      {/* Mobile Sticky Button */}
-      <div className="lg:hidden fixed bottom-4 right-4 z-50">
-        <Button 
-          variant="spotlight" 
-          size="sm" 
-          className="shadow-lg h-10 px-4"
-          onClick={handleGetSuggestion}
-          disabled={isLoading}
-        >
-          <Sparkles className="w-4 h-4 mr-1" />
-          {isLoading ? "..." : "Sugerir"}
-        </Button>
-      </div>
+      {/* Mobile Sticky Button - Only show when content is displayed */}
+      {content && (
+        <div className="lg:hidden fixed bottom-4 right-4 z-50">
+          <Button 
+            variant="spotlight" 
+            size="sm" 
+            className="shadow-lg h-10 px-4"
+            onClick={handleGetSuggestion}
+            disabled={isLoading}
+          >
+            <Sparkles className="w-4 h-4 mr-1" />
+            {isLoading ? "..." : "Sugerir"}
+          </Button>
+        </div>
+      )}
 
       <Footer />
     </div>
