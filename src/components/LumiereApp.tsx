@@ -160,16 +160,16 @@ const LumiereApp = () => {
       </main>
 
       {/* Mobile Sticky Button */}
-      <div className="lg:hidden fixed bottom-4 left-4 right-4 z-50">
+      <div className="lg:hidden fixed bottom-4 right-4 z-50">
         <Button 
           variant="spotlight" 
-          size="default" 
-          className="w-full shadow-lg h-12"
+          size="sm" 
+          className="shadow-lg h-10 px-4"
           onClick={handleGetSuggestion}
           disabled={isLoading}
         >
-          <Sparkles className="w-4 h-4 mr-2" />
-          {isLoading ? "A sugerir..." : "Sugerir conteúdo"}
+          <Sparkles className="w-4 h-4 mr-1" />
+          {isLoading ? "..." : "Sugerir"}
         </Button>
       </div>
 
