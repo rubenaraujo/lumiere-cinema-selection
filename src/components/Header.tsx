@@ -1,13 +1,13 @@
-import { Film } from "lucide-react";
-
 const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-md">
-            <Film className="w-6 h-6 text-white" />
-          </div>
+          <img 
+            src="/lovable-uploads/6c5812a0-e28e-43e2-8bd4-409bf85df54b.png" 
+            alt="Lumiere Logo" 
+            className="w-10 h-10"
+          />
           <h1 className="text-2xl font-bold text-foreground">
             Lumiere
           </h1>
