@@ -105,7 +105,7 @@ const LumiereApp = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-8 pb-20 lg:pb-8">
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Filters Panel */}
           <div className="lg:col-span-1">
@@ -158,6 +158,20 @@ const LumiereApp = () => {
           </div>
         </div>
       </main>
+
+      {/* Mobile Sticky Button */}
+      <div className="lg:hidden fixed bottom-4 left-4 right-4 z-50">
+        <Button 
+          variant="spotlight" 
+          size="lg" 
+          className="w-full shadow-lg"
+          onClick={handleGetSuggestion}
+          disabled={isLoading}
+        >
+          <Sparkles className="w-4 h-4 mr-2" />
+          {isLoading ? "A sugerir..." : "Sugerir conteúdo"}
+        </Button>
+      </div>
 
       <Footer />
     </div>

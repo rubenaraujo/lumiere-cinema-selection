@@ -96,11 +96,11 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
         onReset={handleReset}
       />
 
-      {/* Suggestion Button */}
+      {/* Suggestion Button - Hidden on mobile, visible on desktop */}
       <Button 
         variant="spotlight" 
         size="lg" 
-        className="w-full"
+        className="w-full hidden lg:flex"
         onClick={onGetSuggestion}
         disabled={isLoading}
       >
