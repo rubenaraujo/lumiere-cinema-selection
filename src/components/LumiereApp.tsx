@@ -163,8 +163,8 @@ const LumiereApp = () => {
       <div className="lg:hidden fixed bottom-4 left-4 right-4 z-50">
         <Button 
           variant="spotlight" 
-          size="lg" 
-          className="w-full shadow-lg"
+          size="default" 
+          className="w-full shadow-lg h-12"
           onClick={handleGetSuggestion}
           disabled={isLoading}
         >
