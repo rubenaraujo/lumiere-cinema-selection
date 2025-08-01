@@ -29,8 +29,13 @@ A aplicação já está configurada com uma chave API da TMDb para uso imediato.
 
 ## Deploy
 
-Este projeto está configurado para deploy estático no GitHub Pages:
+Este projeto está configurado para deploy automático no GitHub Pages através de GitHub Actions.
 
+✅ **Status**: Deploy configurado e funcional  
+🔄 **Trigger**: Automático no push para branch main  
+🌐 **URL**: https://rubenaraujo.github.io/lumiere-cinema-selection/
+
+### Deploy manual:
 1. Build o projeto: `npm run build`
 2. Deploy a pasta `dist` para o GitHub Pages
 
