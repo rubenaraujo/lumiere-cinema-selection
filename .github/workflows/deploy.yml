@@ -29,7 +29,7 @@ jobs:
     - name: Install and Build 🔧
       run: |
         npm ci
-        npm run build
+        npx vite build
         ls -la dist/
       env:
         NODE_ENV: production
