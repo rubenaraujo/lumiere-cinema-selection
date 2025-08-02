@@ -11,7 +11,6 @@ import { Sparkles } from "lucide-react";
 import { 
   getRandomSuggestion, 
   getGenres, 
-  clearSuggestionHistory,
   type ContentItem, 
   type Filters 
 } from "../services/tmdb";
@@ -63,8 +62,6 @@ const LumiereApp = () => {
     setCurrentFilters(filters);
     // Clear current content when filters change
     setContent(null);
-    // Clear suggestion history when filters change for fresh results
-    clearSuggestionHistory();
   };
 
   const handleGetSuggestion = async () => {
