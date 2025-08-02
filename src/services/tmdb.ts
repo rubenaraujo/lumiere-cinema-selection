@@ -82,6 +82,23 @@ export interface Filters {
   minRating: number;
 }
 
+// Cache for recent suggestions to avoid repetition
+const recentSuggestions = new Set<number>();
+const MAX_RECENT_SUGGESTIONS = 50; // Remember last 50 suggestions
+
+const addToRecentSuggestions = (id: number) => {
+  recentSuggestions.add(id);
+  // Keep only the most recent suggestions
+  if (recentSuggestions.size > MAX_RECENT_SUGGESTIONS) {
+    const oldestItems = Array.from(recentSuggestions).slice(0, recentSuggestions.size - MAX_RECENT_SUGGESTIONS);
+    oldestItems.forEach(item => recentSuggestions.delete(item));
+  }
+};
+
+export const clearSuggestionHistory = () => {
+  recentSuggestions.clear();
+};
+
 const makeRequest = async (endpoint: string, params: Record<string, any> = {}) => {
   const apiKey = getTmdbApiKey();
   if (!apiKey) {
@@ -125,10 +142,17 @@ export const discoverContent = async (
     page,
     'vote_average.gte': minRating,
     'vote_count.gte': 100,
-    // Randomize sorting method for better variety
-    sort_by: Math.random() < 0.3 ? 'popularity.desc' : 
-             Math.random() < 0.5 ? 'release_date.desc' : 'vote_average.desc',
   };
+  
+  // Randomize sorting method for much better variety
+  const sortOptions = [
+    'popularity.desc', 'popularity.asc',
+    'release_date.desc', 'release_date.asc', 
+    'vote_average.desc', 'vote_count.desc',
+    'original_title.asc'
+  ];
+  
+  params.sort_by = sortOptions[Math.floor(Math.random() * sortOptions.length)];
 
   // Add miniseries specific constraints
   if (contentType === 'miniseries') {
@@ -178,35 +202,75 @@ export const discoverContent = async (
 };
 
 export const getRandomSuggestion = async (filters: Filters): Promise<ContentItem | null> => {
-  try {
-    // Get total results first to ensure better random selection
-    const initialResponse = await discoverContent(filters, 1);
-    
-    if (initialResponse.results.length === 0) {
-      return null;
+  const MAX_ATTEMPTS = 10; // Maximum attempts to find a non-repeated suggestion
+  
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    try {
+      // Vary search strategy for better randomness
+      const searchStrategy = Math.random();
+      let modifiedFilters = { ...filters };
+      
+      // Occasionally broaden search criteria for more variety
+      if (searchStrategy < 0.2 && attempt > 2) {
+        // Lower rating threshold slightly for more variety
+        modifiedFilters.minRating = Math.max(6.0, filters.minRating - 0.5);
+      }
+      
+      // Get total results first
+      const initialResponse = await discoverContent(modifiedFilters, 1);
+      
+      if (initialResponse.results.length === 0) {
+        continue; // Try next attempt with different strategy
+      }
+      
+      // Calculate available pages (limit to first 100 pages)
+      const totalPages = Math.min(initialResponse.total_pages, 100);
+      
+      // Use different page selection strategy
+      let randomPage: number;
+      if (searchStrategy < 0.4) {
+        // Sometimes prefer later pages for more variety
+        const startPage = Math.max(1, Math.floor(totalPages * 0.3));
+        randomPage = Math.floor(Math.random() * (totalPages - startPage + 1)) + startPage;
+      } else {
+        randomPage = Math.floor(Math.random() * totalPages) + 1;
+      }
+      
+      // Get the random page
+      let finalResponse = initialResponse;
+      if (randomPage > 1) {
+        finalResponse = await discoverContent(modifiedFilters, randomPage);
+      }
+      
+      if (finalResponse.results.length === 0) {
+        continue;
+      }
+      
+      // Filter out recently suggested items
+      const availableResults = finalResponse.results.filter(
+        item => !recentSuggestions.has(item.id)
+      );
+      
+      // If all results are recent, allow repetition but prefer less recent ones
+      const resultsToUse = availableResults.length > 0 ? availableResults : finalResponse.results;
+      
+      // Pick random item
+      const randomIndex = Math.floor(Math.random() * resultsToUse.length);
+      const selectedItem = resultsToUse[randomIndex];
+      
+      // Add to recent suggestions
+      addToRecentSuggestions(selectedItem.id);
+      
+      return selectedItem;
+      
+    } catch (error) {
+      console.error(`Attempt ${attempt + 1} failed:`, error);
+      continue;
     }
-    
-    // Calculate available pages (limit to first 100 pages for performance)
-    const totalPages = Math.min(initialResponse.total_pages, 100);
-    const randomPage = Math.floor(Math.random() * totalPages) + 1;
-    
-    // Get the random page (only if different from page 1)
-    let finalResponse = initialResponse;
-    if (randomPage > 1) {
-      finalResponse = await discoverContent(filters, randomPage);
-    }
-    
-    if (finalResponse.results.length === 0) {
-      return null;
-    }
-    
-    // Pick a random item from the results
-    const randomIndex = Math.floor(Math.random() * finalResponse.results.length);
-    return finalResponse.results[randomIndex];
-  } catch (error) {
-    console.error('Error getting random suggestion:', error);
-    return null;
   }
+  
+  console.error('Failed to get suggestion after multiple attempts');
+  return null;
 };
 
 // Get detailed information about a specific content item
