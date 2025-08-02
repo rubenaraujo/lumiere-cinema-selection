@@ -123,9 +123,11 @@ export const discoverContent = async (
   
   const params: Record<string, any> = {
     page,
-    'vote_average.gte': minRating, // Use the slider value
-    'vote_count.gte': 100,   // Minimum vote count for reliability
-    sort_by: 'vote_average.desc',
+    'vote_average.gte': minRating,
+    'vote_count.gte': 100,
+    // Randomize sorting method for better variety
+    sort_by: Math.random() < 0.3 ? 'popularity.desc' : 
+             Math.random() < 0.5 ? 'release_date.desc' : 'vote_average.desc',
   };
 
   // Add miniseries specific constraints
