@@ -172,8 +172,17 @@ export const discoverContent = async (
 
   const response = await makeRequest(`/discover/${searchType}`, params);
   
-  // Debug: log the response
+  // Debug: log the response and check for specific titles
   console.log(`TMDb API response - Page ${page}: ${response.results.length} results, Total pages: ${response.total_pages}, Total results: ${response.total_results}`);
+  
+  // Debug: Check if "Presumed Innocent" is in results
+  const presumedInnocent = response.results.find(item => 
+    (item.title || item.name)?.toLowerCase().includes('presumed innocent') || 
+    item.id === 156933
+  );
+  if (presumedInnocent) {
+    console.log('🎯 Found Presumed Innocent on page', page, ':', presumedInnocent);
+  }
   
   // Normalize the response to have consistent field names
   const normalizedResults = response.results.map((item: Movie | TvShow) => ({
