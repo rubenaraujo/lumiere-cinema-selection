@@ -20,6 +20,7 @@ const LumiereApp = () => {
   const [content, setContent] = useState<ContentItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [genres, setGenres] = useState<{ id: number; name: string; }[]>([]);
+  const [shownContentIds, setShownContentIds] = useState<Set<number>>(new Set());
   const [currentFilters, setCurrentFilters] = useState<Filters>({
     contentType: 'movie',
     genres: [],
@@ -60,17 +61,21 @@ const LumiereApp = () => {
 
   const handleFiltersChange = (filters: Filters) => {
     setCurrentFilters(filters);
-    // Clear current content when filters change
+    // Clear current content and cache when filters change
     setContent(null);
+    setShownContentIds(new Set());
   };
 
   const handleGetSuggestion = async () => {
     setIsLoading(true);
     try {
-      const suggestion = await getRandomSuggestion(currentFilters);
+      const suggestion = await getRandomSuggestion(currentFilters, Array.from(shownContentIds));
       
       if (suggestion) {
         setContent(suggestion);
+        // Add to shown content cache
+        setShownContentIds(prev => new Set([...prev, suggestion.id]));
+        
         // Auto scroll to the suggestion after a short delay
         setTimeout(() => {
           const contentElement = document.getElementById('content-suggestion');

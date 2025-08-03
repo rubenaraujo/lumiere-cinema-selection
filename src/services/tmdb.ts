@@ -191,7 +191,7 @@ export const discoverContent = async (
   };
 };
 
-export const getRandomSuggestion = async (filters: Filters): Promise<ContentItem | null> => {
+export const getRandomSuggestion = async (filters: Filters, excludeIds: number[] = []): Promise<ContentItem | null> => {
   try {
     // Get total results first
     const initialResponse = await discoverContent(filters, 1);
@@ -216,9 +216,30 @@ export const getRandomSuggestion = async (filters: Filters): Promise<ContentItem
       return null;
     }
     
-    // Pick completely random item
-    const randomIndex = Math.floor(Math.random() * finalResponse.results.length);
-    return finalResponse.results[randomIndex];
+    // Filter out already shown content
+    const availableResults = finalResponse.results.filter(item => !excludeIds.includes(item.id));
+    
+    if (availableResults.length === 0) {
+      // If all items in this page were already shown, try to get more pages
+      const maxRetries = 5;
+      for (let retry = 0; retry < maxRetries; retry++) {
+        const newRandomPage = Math.floor(Math.random() * totalPages) + 1;
+        if (newRandomPage !== randomPage) {
+          const retryResponse = await discoverContent(filters, newRandomPage);
+          const retryAvailable = retryResponse.results.filter(item => !excludeIds.includes(item.id));
+          if (retryAvailable.length > 0) {
+            const randomIndex = Math.floor(Math.random() * retryAvailable.length);
+            return retryAvailable[randomIndex];
+          }
+        }
+      }
+      // If still no new items found, return null to indicate no more unique suggestions
+      return null;
+    }
+    
+    // Pick completely random item from available ones
+    const randomIndex = Math.floor(Math.random() * availableResults.length);
+    return availableResults[randomIndex];
   } catch (error) {
     console.error('Error getting random suggestion:', error);
     return null;
