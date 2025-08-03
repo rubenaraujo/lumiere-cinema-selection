@@ -138,10 +138,8 @@ export const discoverContent = async (
     ][Math.floor(Math.random() * 8)],
   };
 
-  // Add miniseries specific constraints
-  if (contentType === 'miniseries') {
-    params['with_type'] = '2'; // Miniseries type
-  }
+  // Remove miniseries constraint - it's too restrictive
+  // Most mini-series are just tagged as regular TV shows in TMDb
 
   if (genres.length > 0) {
     params.with_genres = genres.join(',');
