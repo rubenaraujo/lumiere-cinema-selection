@@ -124,9 +124,18 @@ export const discoverContent = async (
   const params: Record<string, any> = {
     page,
     'vote_average.gte': minRating,
-    'vote_count.gte': 50, // Lower threshold for larger pool
-    // Completely random sorting for maximum variety
-    sort_by: ['popularity.desc', 'popularity.asc', 'release_date.desc', 'vote_average.desc', 'vote_count.desc'][Math.floor(Math.random() * 5)],
+    'vote_count.gte': 10, // Much lower threshold for bigger pool
+    // More sorting options including random-like behavior
+    sort_by: [
+      'popularity.desc', 
+      'popularity.asc', 
+      'release_date.desc', 
+      'release_date.asc',
+      'vote_average.desc', 
+      'vote_average.asc',
+      'vote_count.desc',
+      'vote_count.asc'
+    ][Math.floor(Math.random() * 8)],
   };
 
   // Add miniseries specific constraints
@@ -157,8 +166,14 @@ export const discoverContent = async (
   if (language && language !== 'all') {
     params.with_original_language = language;
   }
+  
+  // Debug: log the actual request parameters
+  console.log('TMDb API request params:', params);
 
   const response = await makeRequest(`/discover/${searchType}`, params);
+  
+  // Debug: log the response
+  console.log(`TMDb API response - Page ${page}: ${response.results.length} results, Total pages: ${response.total_pages}, Total results: ${response.total_results}`);
   
   // Normalize the response to have consistent field names
   const normalizedResults = response.results.map((item: Movie | TvShow) => ({
@@ -185,9 +200,11 @@ export const getRandomSuggestion = async (filters: Filters): Promise<ContentItem
       return null;
     }
     
-    // Use much more pages for bigger pool (up to 500 pages = 10,000 items)
-    const totalPages = Math.min(initialResponse.total_pages, 500);
+    // Use all available pages for maximum pool
+    const totalPages = Math.min(initialResponse.total_pages, 1000);
     const randomPage = Math.floor(Math.random() * totalPages) + 1;
+    
+    console.log(`Getting random suggestion - Total pages available: ${totalPages}, Selected page: ${randomPage}`);
     
     // Get the random page
     let finalResponse = initialResponse;
