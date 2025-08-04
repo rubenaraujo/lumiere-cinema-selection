@@ -12,7 +12,6 @@ import {
   getRandomSuggestion, 
   getGenres, 
   clearSuggestionPool,
-  debugSpecificSeries,
   type ContentItem, 
   type Filters 
 } from "../services/tmdb";
@@ -59,9 +58,6 @@ const LumiereApp = () => {
     };
 
     loadGenres();
-    
-    // Run debug test for specific series
-    debugSpecificSeries();
   }, [toast]);
 
   const handleFiltersChange = (filters: Filters) => {
