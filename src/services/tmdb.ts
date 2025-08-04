@@ -232,6 +232,64 @@ export const clearSuggestionPool = () => {
   currentFiltersKey = '';
 };
 
+// Auto-test function to debug specific series
+export const debugSpecificSeries = async () => {
+  console.log('🔍 DEBUG: Testing specific series filters...');
+  
+  // Test filters that should find Presumed Innocent and Black Bird
+  const testFilters: Filters = {
+    contentType: 'tv',
+    genres: [80, 18, 9648], // Crime, Drama, Mystery
+    yearFrom: '2020',
+    yearTo: '2024',
+    language: 'en',
+    minRating: 7.5
+  };
+  
+  console.log('🔍 Testing with filters:', testFilters);
+  
+  try {
+    // Test direct API call
+    const result = await discoverContent(testFilters, 1);
+    console.log('🔍 API test result:', result.results.length, 'items found');
+    
+    // Check if our target series are in the results
+    const targets = [
+      { name: 'Presumed Innocent', id: 156933 },
+      { name: 'Black Bird', id: 155537 }
+    ];
+    
+    targets.forEach(target => {
+      const found = result.results.find(item => item.id === target.id);
+      if (found) {
+        console.log(`✅ Found ${target.name}:`, found);
+      } else {
+        console.log(`❌ ${target.name} NOT found in results`);
+      }
+    });
+    
+    // Test with miniseries filter specifically
+    const miniseriesFilters: Filters = {
+      ...testFilters,
+      contentType: 'miniseries'
+    };
+    
+    console.log('🔍 Testing miniseries filter...');
+    const miniseriesResult = await discoverContent(miniseriesFilters, 1);
+    console.log('🔍 Miniseries result:', miniseriesResult.results.length, 'items found');
+    
+    const blackBirdFound = miniseriesResult.results.find(item => item.id === 155537);
+    if (blackBirdFound) {
+      console.log('✅ Found Black Bird in miniseries:', blackBirdFound);
+    } else {
+      console.log('❌ Black Bird NOT found in miniseries results');
+    }
+    
+  } catch (error) {
+    console.error('🔍 Debug test failed:', error);
+  }
+};
+
 const buildSuggestionPool = async (filters: Filters): Promise<ContentItem[]> => {
   const filtersKey = getFiltersKey(filters);
   
