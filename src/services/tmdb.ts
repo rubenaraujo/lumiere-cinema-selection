@@ -200,55 +200,115 @@ export const discoverContent = async (
   };
 };
 
+// Global suggestion pool cache
+let suggestionPool: ContentItem[] = [];
+let currentFiltersKey = '';
+
+const getFiltersKey = (filters: Filters): string => {
+  return JSON.stringify(filters);
+};
+
+export const clearSuggestionPool = () => {
+  suggestionPool = [];
+  currentFiltersKey = '';
+};
+
+const buildSuggestionPool = async (filters: Filters): Promise<ContentItem[]> => {
+  const filtersKey = getFiltersKey(filters);
+  
+  // If filters changed, clear the pool
+  if (currentFiltersKey !== filtersKey) {
+    suggestionPool = [];
+    currentFiltersKey = filtersKey;
+  }
+  
+  // If pool is already built, return it
+  if (suggestionPool.length > 0) {
+    return suggestionPool;
+  }
+  
+  console.log('Building complete suggestion pool...');
+  
+  // Get first page to know total pages
+  const initialResponse = await discoverContent(filters, 1);
+  
+  if (initialResponse.results.length === 0) {
+    return [];
+  }
+  
+  const allResults: ContentItem[] = [...initialResponse.results];
+  const totalPages = Math.min(initialResponse.total_pages, 50); // Limit to 50 pages for performance
+  
+  console.log(`Total pages available: ${initialResponse.total_pages}, Fetching: ${totalPages}`);
+  
+  // Fetch remaining pages in parallel (in batches to avoid overwhelming the API)
+  const batchSize = 5;
+  for (let i = 2; i <= totalPages; i += batchSize) {
+    const batchPromises = [];
+    const batchEnd = Math.min(i + batchSize - 1, totalPages);
+    
+    for (let page = i; page <= batchEnd; page++) {
+      batchPromises.push(discoverContent(filters, page));
+    }
+    
+    try {
+      const batchResponses = await Promise.all(batchPromises);
+      batchResponses.forEach(response => {
+        allResults.push(...response.results);
+      });
+      
+      console.log(`Fetched pages ${i}-${batchEnd}, Total items so far: ${allResults.length}`);
+    } catch (error) {
+      console.error(`Error fetching batch ${i}-${batchEnd}:`, error);
+      // Continue with what we have
+      break;
+    }
+  }
+  
+  // Remove duplicates and shuffle
+  const uniqueResults = allResults.filter((item, index, self) => 
+    index === self.findIndex(i => i.id === item.id)
+  );
+  
+  // Fisher-Yates shuffle algorithm
+  for (let i = uniqueResults.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [uniqueResults[i], uniqueResults[j]] = [uniqueResults[j], uniqueResults[i]];
+  }
+  
+  suggestionPool = uniqueResults;
+  console.log(`Built suggestion pool with ${suggestionPool.length} unique items (shuffled)`);
+  
+  // Debug: Check if "Presumed Innocent" is in the pool
+  const presumedInnocent = suggestionPool.find(item => 
+    (item.title || item.original_title || item.original_name)?.toLowerCase().includes('presumed innocent') || 
+    item.id === 156933
+  );
+  if (presumedInnocent) {
+    console.log('🎯 Presumed Innocent found in suggestion pool:', presumedInnocent);
+  }
+  
+  return suggestionPool;
+};
+
 export const getRandomSuggestion = async (filters: Filters, excludeIds: number[] = []): Promise<ContentItem | null> => {
   try {
-    // Get total results first
-    const initialResponse = await discoverContent(filters, 1);
+    const pool = await buildSuggestionPool(filters);
     
-    if (initialResponse.results.length === 0) {
+    if (pool.length === 0) {
       return null;
     }
     
-    // Use all available pages for maximum pool
-    const totalPages = Math.min(initialResponse.total_pages, 1000);
-    const randomPage = Math.floor(Math.random() * totalPages) + 1;
+    // Find first item that hasn't been shown yet
+    const availableItem = pool.find(item => !excludeIds.includes(item.id));
     
-    console.log(`Getting random suggestion - Total pages available: ${totalPages}, Selected page: ${randomPage}`);
-    
-    // Get the random page
-    let finalResponse = initialResponse;
-    if (randomPage > 1) {
-      finalResponse = await discoverContent(filters, randomPage);
-    }
-    
-    if (finalResponse.results.length === 0) {
+    if (!availableItem) {
+      console.log('All suggestions have been shown. Pool exhausted.');
       return null;
     }
     
-    // Filter out already shown content
-    const availableResults = finalResponse.results.filter(item => !excludeIds.includes(item.id));
-    
-    if (availableResults.length === 0) {
-      // If all items in this page were already shown, try to get more pages
-      const maxRetries = 5;
-      for (let retry = 0; retry < maxRetries; retry++) {
-        const newRandomPage = Math.floor(Math.random() * totalPages) + 1;
-        if (newRandomPage !== randomPage) {
-          const retryResponse = await discoverContent(filters, newRandomPage);
-          const retryAvailable = retryResponse.results.filter(item => !excludeIds.includes(item.id));
-          if (retryAvailable.length > 0) {
-            const randomIndex = Math.floor(Math.random() * retryAvailable.length);
-            return retryAvailable[randomIndex];
-          }
-        }
-      }
-      // If still no new items found, return null to indicate no more unique suggestions
-      return null;
-    }
-    
-    // Pick completely random item from available ones
-    const randomIndex = Math.floor(Math.random() * availableResults.length);
-    return availableResults[randomIndex];
+    console.log(`Returning suggestion ${excludeIds.length + 1} of ${pool.length}: ${availableItem.title}`);
+    return availableItem;
   } catch (error) {
     console.error('Error getting random suggestion:', error);
     return null;
