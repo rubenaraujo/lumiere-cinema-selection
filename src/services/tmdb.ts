@@ -167,6 +167,10 @@ export const discoverContent = async (
     params.with_original_language = language;
   }
   
+  // Debug: log the exact request parameters being sent
+  console.log('🔍 TMDb API request params for searchType:', searchType, params);
+  console.log('🔍 Full URL will be:', `${TMDB_BASE_URL}/discover/${searchType}`, 'with params:', params);
+  
   // Debug: log the actual request parameters
   console.log('TMDb API request params:', params);
 
@@ -175,14 +179,29 @@ export const discoverContent = async (
   // Debug: log the response and check for specific titles
   console.log(`TMDb API response - Page ${page}: ${response.results.length} results, Total pages: ${response.total_pages}, Total results: ${response.total_results}`);
   
-  // Debug: Check if "Presumed Innocent" is in results
-  const presumedInnocent = response.results.find(item => 
-    (item.title || item.name)?.toLowerCase().includes('presumed innocent') || 
-    item.id === 156933
-  );
-  if (presumedInnocent) {
-    console.log('🎯 Found Presumed Innocent on page', page, ':', presumedInnocent);
-  }
+  // Debug: Check if specific series are in results
+  const targetSeries = [
+    { name: 'Presumed Innocent', id: 156933 },
+    { name: 'Black Bird', id: 155537 }
+  ];
+  
+  targetSeries.forEach(target => {
+    const found = response.results.find(item => 
+      (item.title || item.name)?.toLowerCase().includes(target.name.toLowerCase()) || 
+      item.id === target.id
+    );
+    if (found) {
+      console.log(`🎯 Found ${target.name} on page ${page}:`, {
+        id: found.id,
+        title: found.title || found.name,
+        vote_average: found.vote_average,
+        vote_count: found.vote_count,
+        genre_ids: found.genre_ids,
+        original_language: found.original_language,
+        first_air_date: found.first_air_date
+      });
+    }
+  });
   
   // Normalize the response to have consistent field names
   const normalizedResults = response.results.map((item: Movie | TvShow) => ({
