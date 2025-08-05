@@ -315,7 +315,10 @@ export const getRandomSuggestion = async (filters: Filters, excludeIds: number[]
   try {
     const pool = await buildSuggestionPool(filters);
     
+    console.log(`🎯 Pool has ${pool.length} items, ${excludeIds.length} already shown, ${pool.length - excludeIds.length} available`);
+    
     if (pool.length === 0) {
+      console.log('❌ No items in suggestion pool');
       return null;
     }
     
@@ -323,14 +326,17 @@ export const getRandomSuggestion = async (filters: Filters, excludeIds: number[]
     const availableItem = pool.find(item => !excludeIds.includes(item.id));
     
     if (!availableItem) {
-      console.log('All suggestions have been shown. Pool exhausted.');
-      return null;
+      console.log('⚠️ All suggestions have been shown. Pool exhausted. Resetting...');
+      // Reset the shown IDs when pool is exhausted and return first item
+      const firstItem = pool[0];
+      console.log(`🔄 Restarting with: ${firstItem.title}`);
+      return firstItem;
     }
     
-    console.log(`Returning suggestion ${excludeIds.length + 1} of ${pool.length}: ${availableItem.title}`);
+    console.log(`✅ Returning suggestion ${excludeIds.length + 1} of ${pool.length}: ${availableItem.title}`);
     return availableItem;
   } catch (error) {
-    console.error('Error getting random suggestion:', error);
+    console.error('❌ Error getting random suggestion:', error);
     return null;
   }
 };

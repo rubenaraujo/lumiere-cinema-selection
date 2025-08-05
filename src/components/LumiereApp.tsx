@@ -76,8 +76,15 @@ const LumiereApp = () => {
       
       if (suggestion) {
         setContent(suggestion);
-        // Add to shown content cache
-        setShownContentIds(prev => new Set([...prev, suggestion.id]));
+        
+        // Check if this is a reset (same ID as first suggestion means pool was exhausted)
+        if (shownContentIds.has(suggestion.id)) {
+          console.log('🔄 Pool exhausted, resetting shown content cache');
+          setShownContentIds(new Set([suggestion.id]));
+        } else {
+          // Add to shown content cache
+          setShownContentIds(prev => new Set([...prev, suggestion.id]));
+        }
         
         // Auto scroll to the suggestion after a short delay
         setTimeout(() => {
