@@ -332,12 +332,22 @@ export const getRandomSuggestion = async (filters: Filters, excludeIds: number[]
   try {
     const pool = await buildSuggestionPool(filters);
     
-    console.log(`🎯 Pool has ${pool.length} items, ${excludeIds.length} already shown, ${pool.length - excludeIds.length} available`);
+    console.log(`🎯 SUGGESTION STATUS: Pool has ${pool.length} total items`);
+    console.log(`🎯 SUGGESTION STATUS: ${excludeIds.length} already shown`);
+    console.log(`🎯 SUGGESTION STATUS: ${pool.length - excludeIds.length} available to show`);
+    console.log(`🎯 EXCLUDED IDs: [${excludeIds.join(', ')}]`);
     
     if (pool.length === 0) {
       console.log('❌ No items in suggestion pool');
       return null;
     }
+    
+    // Show all available items in pool for debugging
+    console.log('📚 COMPLETE POOL CONTENTS:');
+    pool.forEach((item, index) => {
+      const isShown = excludeIds.includes(item.id);
+      console.log(`  ${index + 1}. [ID: ${item.id}] ${item.title} ${isShown ? '(ALREADY SHOWN)' : '(AVAILABLE)'}`);
+    });
     
     // Find first item that hasn't been shown yet
     const availableItem = pool.find(item => !excludeIds.includes(item.id));
@@ -350,7 +360,8 @@ export const getRandomSuggestion = async (filters: Filters, excludeIds: number[]
       return firstItem;
     }
     
-    console.log(`✅ Returning suggestion ${excludeIds.length + 1} of ${pool.length}: ${availableItem.title}`);
+    console.log(`✅ SELECTED SUGGESTION: [ID: ${availableItem.id}] ${availableItem.title}`);
+    console.log(`✅ This is suggestion ${excludeIds.length + 1} of ${pool.length} total`);
     return availableItem;
   } catch (error) {
     console.error('❌ Error getting random suggestion:', error);
