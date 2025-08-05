@@ -138,6 +138,8 @@ export const discoverContent = async (
     ][Math.floor(Math.random() * 8)],
   };
 
+  console.log(`🔍 DISCOVER: contentType=${contentType}, searchType=${searchType}, page=${page}`);
+  console.log(`🔍 FILTERS: genres=[${genres.join(',')}], year=${yearFrom}-${yearTo}, lang=${language}, rating>=${minRating}`);
   
   // Add miniseries specific constraints
   if (contentType === 'miniseries') {
@@ -147,6 +149,7 @@ export const discoverContent = async (
 
   if (genres.length > 0) {
     params.with_genres = genres.join(',');
+    console.log(`🏷️ Genre filter: ${genres.join(',')} (Mystery=9648, Crime=80, Drama=18)`);
   }
 
   if (yearFrom) {
@@ -155,6 +158,7 @@ export const discoverContent = async (
     } else {
       params['first_air_date.gte'] = `${yearFrom}-01-01`;
     }
+    console.log(`📅 Year from: ${yearFrom}`);
   }
 
   if (yearTo) {
@@ -163,10 +167,12 @@ export const discoverContent = async (
     } else {
       params['first_air_date.lte'] = `${yearTo}-12-31`;
     }
+    console.log(`📅 Year to: ${yearTo}`);
   }
 
   if (language && language !== 'all') {
     params.with_original_language = language;
+    console.log(`🌍 Language: ${language}`);
   }
   
   // Debug: log the exact request parameters being sent
