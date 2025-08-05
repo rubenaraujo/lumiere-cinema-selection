@@ -138,9 +138,11 @@ export const discoverContent = async (
     ][Math.floor(Math.random() * 8)],
   };
 
+  
   // Add miniseries specific constraints
   if (contentType === 'miniseries') {
-    params['with_type'] = '2'; // Miniseries type
+    // Don't use with_type=2 as it's too restrictive, instead filter by episode count later
+    console.log('🎬 Searching for miniseries (using TV endpoint without with_type restriction)');
   }
 
   if (genres.length > 0) {
@@ -177,7 +179,14 @@ export const discoverContent = async (
   const response = await makeRequest(`/discover/${searchType}`, params);
   
   // Debug: log the response and check for specific titles
-  console.log(`TMDb API response - Page ${page}: ${response.results.length} results, Total pages: ${response.total_pages}, Total results: ${response.total_results}`);
+  console.log(`📊 TMDb API response - Page ${page}: ${response.results.length} results, Total pages: ${response.total_pages}, Total results: ${response.total_results}`);
+  
+  // Debug: Check for mystery genre specifically
+  if (genres.includes(9648)) { // Mystery genre ID
+    console.log('🔍 Mystery genre filter active - checking for mystery shows...');
+    const mysteryShows = response.results.filter(item => item.genre_ids.includes(9648));
+    console.log(`🔍 Found ${mysteryShows.length} shows with mystery genre on this page`);
+  }
   
   // Debug: Check if specific series are in results
   const targetSeries = [
@@ -200,6 +209,8 @@ export const discoverContent = async (
         original_language: found.original_language,
         first_air_date: found.first_air_date
       });
+    } else {
+      console.log(`❌ ${target.name} NOT found on page ${page}`);
     }
   });
   
