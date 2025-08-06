@@ -380,3 +380,81 @@ export const getContentDetails = async (
   });
   return response;
 };
+
+// Test function to search for specific series by name
+export const searchSpecificSeries = async (query: string): Promise<any> => {
+  const response = await makeRequest('/search/tv', { query });
+  return response;
+};
+
+// Test function to get details of specific series by ID
+export const testSeriesById = async (id: number): Promise<any> => {
+  try {
+    const response = await makeRequest(`/tv/${id}`);
+    console.log(`📺 Series details for ID ${id}:`, {
+      id: response.id,
+      name: response.name,
+      first_air_date: response.first_air_date,
+      vote_average: response.vote_average,
+      vote_count: response.vote_count,
+      genres: response.genres,
+      original_language: response.original_language,
+      number_of_episodes: response.number_of_episodes,
+      number_of_seasons: response.number_of_seasons,
+      episode_run_time: response.episode_run_time,
+      status: response.status,
+      type: response.type
+    });
+    return response;
+  } catch (error) {
+    console.error(`❌ Error getting details for series ID ${id}:`, error);
+    return null;
+  }
+};
+
+// Test function to manually check if series meet our filter criteria
+export const testFilterCompatibility = async (): Promise<void> => {
+  console.log('🧪 TESTING SPECIFIC SERIES COMPATIBILITY...');
+  
+  // Test "Presumed Innocent" (ID: 156933)
+  console.log('\n🔍 Testing "Presumed Innocent"...');
+  const presumedInnocent = await testSeriesById(156933);
+  
+  // Test "Black Bird" (ID: 155537) 
+  console.log('\n🔍 Testing "Black Bird"...');
+  const blackBird = await testSeriesById(155537);
+  
+  // Test search by name
+  console.log('\n🔍 Searching for "Presumed Innocent" by name...');
+  const searchResults1 = await searchSpecificSeries('Presumed Innocent');
+  console.log('Search results:', searchResults1.results?.slice(0, 3));
+  
+  console.log('\n🔍 Searching for "Black Bird" by name...');
+  const searchResults2 = await searchSpecificSeries('Black Bird');
+  console.log('Search results:', searchResults2.results?.slice(0, 3));
+  
+  // Test discover with very broad filters
+  console.log('\n🔍 Testing discover with broad filters (miniseries, mystery, 2021+, rating 6+)...');
+  const broadFilters: Filters = {
+    contentType: 'miniseries',
+    genres: [9648], // Mystery
+    yearFrom: '2021',
+    yearTo: '',
+    language: 'en',
+    minRating: 6
+  };
+  
+  const discoverResults = await discoverContent(broadFilters, 1);
+  console.log(`Discover found ${discoverResults.results.length} results`);
+  
+  // Check if our target series are in the results
+  const foundPresumed = discoverResults.results.find(item => 
+    item.id === 156933 || item.title?.toLowerCase().includes('presumed innocent')
+  );
+  const foundBlackBird = discoverResults.results.find(item => 
+    item.id === 155537 || item.title?.toLowerCase().includes('black bird')
+  );
+  
+  console.log('Found Presumed Innocent in discover?', foundPresumed ? 'YES' : 'NO');
+  console.log('Found Black Bird in discover?', foundBlackBird ? 'YES' : 'NO');
+};
