@@ -36,9 +36,9 @@ const genres = [
   { id: 36, name: "História" },
   { id: 10402, name: "Música" },
   { id: 9648, name: "Mistério" },
+  { id: 80, name: "Crime" },
   { id: 10751, name: "Família" },
-  { id: 10752, name: "Guerra" },
-  { id: 37, name: "Western" }
+  { id: 10752, name: "Guerra" }
 ];
 
 const languages = [
