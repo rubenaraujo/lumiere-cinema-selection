@@ -137,17 +137,8 @@ export const discoverContent = async (
     ][Math.floor(Math.random() * 8)],
   };
 
-  console.log(`🔍 DISCOVER: contentType=${contentType}, searchType=${searchType}, page=${page}`);
-  console.log(`🔍 FILTERS: genres=[${genres.join(',')}], year=${yearFrom}-${yearTo}, lang=${language}, rating>=${minRating}`);
-  
-  // For miniseries, don't use restrictive filters - we'll filter in post-processing
-  if (contentType === 'miniseries') {
-    console.log('🎬 Searching for miniseries (will filter by episode count and status after API call)');
-  }
-
   if (genres.length > 0) {
     params.with_genres = genres.join(',');
-    console.log(`🏷️ Genre filter applied: [${genres.join(',')}]`);
   }
 
   if (yearFrom) {
@@ -156,7 +147,6 @@ export const discoverContent = async (
     } else {
       params['first_air_date.gte'] = `${yearFrom}-01-01`;
     }
-    console.log(`📅 Year from: ${yearFrom}`);
   }
 
   if (yearTo) {
@@ -165,58 +155,13 @@ export const discoverContent = async (
     } else {
       params['first_air_date.lte'] = `${yearTo}-12-31`;
     }
-    console.log(`📅 Year to: ${yearTo}`);
   }
 
   if (language && language !== 'all') {
     params.with_original_language = language;
-    console.log(`🌍 Language: ${language}`);
   }
   
-  // Debug: log the exact request parameters being sent
-  console.log('🔍 TMDb API request params for searchType:', searchType, params);
-  console.log('🔍 Full URL will be:', `${TMDB_BASE_URL}/discover/${searchType}`, 'with params:', params);
-  
-  // Debug: log the actual request parameters
-  console.log('TMDb API request params:', params);
-
   const response = await makeRequest(`/discover/${searchType}`, params);
-  
-  // Debug: log the response and check for specific titles
-  console.log(`📊 TMDb API response - Page ${page}: ${response.results.length} results, Total pages: ${response.total_pages}, Total results: ${response.total_results}`);
-  
-  // Debug: Check for mystery genre specifically
-  if (genres.includes(9648)) { // Mystery genre ID
-    console.log('🔍 Mystery genre filter active - checking for mystery shows...');
-    const mysteryShows = response.results.filter(item => item.genre_ids.includes(9648));
-    console.log(`🔍 Found ${mysteryShows.length} shows with mystery genre on this page`);
-  }
-  
-  // Debug: Check if specific series are in results
-  const targetSeries = [
-    { name: 'Presumed Innocent', id: 156933 },
-    { name: 'Black Bird', id: 155537 }
-  ];
-  
-  targetSeries.forEach(target => {
-    const found = response.results.find(item => 
-      (item.title || item.name)?.toLowerCase().includes(target.name.toLowerCase()) || 
-      item.id === target.id
-    );
-    if (found) {
-      console.log(`🎯 Found ${target.name} on page ${page}:`, {
-        id: found.id,
-        title: found.title || found.name,
-        vote_average: found.vote_average,
-        vote_count: found.vote_count,
-        genre_ids: found.genre_ids,
-        original_language: found.original_language,
-        first_air_date: found.first_air_date
-      });
-    } else {
-      console.log(`❌ ${target.name} NOT found on page ${page}`);
-    }
-  });
   
   // Normalize the response to have consistent field names
   const normalizedResults = response.results.map((item: Movie | TvShow) => ({
@@ -429,82 +374,4 @@ export const getContentDetails = async (
     append_to_response: 'credits'
   });
   return response;
-};
-
-// Test function to search for specific series by name
-export const searchSpecificSeries = async (query: string): Promise<any> => {
-  const response = await makeRequest('/search/tv', { query });
-  return response;
-};
-
-// Test function to get details of specific series by ID
-export const testSeriesById = async (id: number): Promise<any> => {
-  try {
-    const response = await makeRequest(`/tv/${id}`);
-    console.log(`📺 Series details for ID ${id}:`, {
-      id: response.id,
-      name: response.name,
-      first_air_date: response.first_air_date,
-      vote_average: response.vote_average,
-      vote_count: response.vote_count,
-      genres: response.genres,
-      original_language: response.original_language,
-      number_of_episodes: response.number_of_episodes,
-      number_of_seasons: response.number_of_seasons,
-      episode_run_time: response.episode_run_time,
-      status: response.status,
-      type: response.type
-    });
-    return response;
-  } catch (error) {
-    console.error(`❌ Error getting details for series ID ${id}:`, error);
-    return null;
-  }
-};
-
-// Test function to manually check if series meet our filter criteria
-export const testFilterCompatibility = async (): Promise<void> => {
-  console.log('🧪 TESTING SPECIFIC SERIES COMPATIBILITY...');
-  
-  // Test "Presumed Innocent" (ID: 156933)
-  console.log('\n🔍 Testing "Presumed Innocent"...');
-  const presumedInnocent = await testSeriesById(156933);
-  
-  // Test "Black Bird" (ID: 155537) 
-  console.log('\n🔍 Testing "Black Bird"...');
-  const blackBird = await testSeriesById(155537);
-  
-  // Test search by name
-  console.log('\n🔍 Searching for "Presumed Innocent" by name...');
-  const searchResults1 = await searchSpecificSeries('Presumed Innocent');
-  console.log('Search results:', searchResults1.results?.slice(0, 3));
-  
-  console.log('\n🔍 Searching for "Black Bird" by name...');
-  const searchResults2 = await searchSpecificSeries('Black Bird');
-  console.log('Search results:', searchResults2.results?.slice(0, 3));
-  
-  // Test discover with very broad filters
-  console.log('\n🔍 Testing discover with broad filters (miniseries, mystery, 2021+, rating 6+)...');
-  const broadFilters: Filters = {
-    contentType: 'miniseries',
-    genres: [9648], // Mystery
-    yearFrom: '2021',
-    yearTo: '',
-    language: 'en',
-    minRating: 6
-  };
-  
-  const discoverResults = await discoverContent(broadFilters, 1);
-  console.log(`Discover found ${discoverResults.results.length} results`);
-  
-  // Check if our target series are in the results
-  const foundPresumed = discoverResults.results.find(item => 
-    item.id === 156933 || item.title?.toLowerCase().includes('presumed innocent')
-  );
-  const foundBlackBird = discoverResults.results.find(item => 
-    item.id === 155537 || item.title?.toLowerCase().includes('black bird')
-  );
-  
-  console.log('Found Presumed Innocent in discover?', foundPresumed ? 'YES' : 'NO');
-  console.log('Found Black Bird in discover?', foundBlackBird ? 'YES' : 'NO');
 };

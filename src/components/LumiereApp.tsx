@@ -12,7 +12,6 @@ import {
   getRandomSuggestion, 
   getGenres, 
   clearSuggestionPool,
-  testFilterCompatibility,
   type ContentItem, 
   type Filters 
 } from "../services/tmdb";
@@ -167,16 +166,6 @@ const LumiereApp = () => {
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
                     {isLoading ? "A sugerir..." : "Sugerir conteúdo"}
-                  </Button>
-                  
-                  {/* Temporary debug button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => testFilterCompatibility()}
-                    className="mt-4"
-                  >
-                    🧪 Testar séries específicas
                   </Button>
                 </CardContent>
               </Card>
