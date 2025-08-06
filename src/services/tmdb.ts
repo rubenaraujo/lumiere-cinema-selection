@@ -149,7 +149,7 @@ export const discoverContent = async (
 
   if (genres.length > 0) {
     params.with_genres = genres.join(',');
-    console.log(`🏷️ Genre filter: ${genres.join(',')} (Mystery=9648, Crime=80, Drama=18)`);
+    console.log(`🏷️ Genre filter applied: [${genres.join(',')}]`);
   }
 
   if (yearFrom) {
