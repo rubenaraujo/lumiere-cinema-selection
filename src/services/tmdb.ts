@@ -118,14 +118,13 @@ export const discoverContent = async (
 ): Promise<TmdbResponse<ContentItem>> => {
   const { contentType, genres, yearFrom, yearTo, language, minRating } = filters;
   
-  // For miniseries, we search TV shows with specific constraints
+  // For miniseries, we search TV shows and filter by series characteristics
   const searchType = contentType === 'miniseries' ? 'tv' : contentType;
   
   const params: Record<string, any> = {
     page,
     'vote_average.gte': minRating,
-    'vote_count.gte': 10, // Much lower threshold for bigger pool
-    // More sorting options including random-like behavior
+    'vote_count.gte': 10,
     sort_by: [
       'popularity.desc', 
       'popularity.asc', 
@@ -141,10 +140,9 @@ export const discoverContent = async (
   console.log(`🔍 DISCOVER: contentType=${contentType}, searchType=${searchType}, page=${page}`);
   console.log(`🔍 FILTERS: genres=[${genres.join(',')}], year=${yearFrom}-${yearTo}, lang=${language}, rating>=${minRating}`);
   
-  // Add miniseries specific constraints
+  // For miniseries, don't use restrictive filters - we'll filter in post-processing
   if (contentType === 'miniseries') {
-    // Don't use with_type=2 as it's too restrictive, instead filter by episode count later
-    console.log('🎬 Searching for miniseries (using TV endpoint without with_type restriction)');
+    console.log('🎬 Searching for miniseries (will filter by episode count and status after API call)');
   }
 
   if (genres.length > 0) {
@@ -302,18 +300,62 @@ const buildSuggestionPool = async (filters: Filters): Promise<ContentItem[]> => 
     }
   }
   
-  // Remove duplicates and shuffle
+  // Remove duplicates
   const uniqueResults = allResults.filter((item, index, self) => 
     index === self.findIndex(i => i.id === item.id)
   );
   
-  // Fisher-Yates shuffle algorithm
-  for (let i = uniqueResults.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [uniqueResults[i], uniqueResults[j]] = [uniqueResults[j], uniqueResults[i]];
+  // If searching for miniseries, get detailed info and filter more intelligently
+  let filteredResults = uniqueResults;
+  if (filters.contentType === 'miniseries') {
+    console.log('🎬 Filtering for miniseries characteristics...');
+    const detailedResults = [];
+    
+    // Process in batches to avoid overwhelming the API
+    for (let i = 0; i < uniqueResults.length; i += 10) {
+      const batch = uniqueResults.slice(i, i + 10);
+      const detailPromises = batch.map(async (item) => {
+        try {
+          const details = await makeRequest(`/tv/${item.id}`);
+          // Check if it's a miniseries-like show
+          const isMiniseries = 
+            details.type === 'Miniseries' || 
+            details.status === 'Ended' && details.number_of_seasons === 1 && details.number_of_episodes <= 12 ||
+            details.status === 'Returning Series' && details.number_of_seasons === 1 && details.number_of_episodes <= 12;
+          
+          if (isMiniseries) {
+            console.log(`✅ ${details.name} qualifies as miniseries: type=${details.type}, seasons=${details.number_of_seasons}, episodes=${details.number_of_episodes}, status=${details.status}`);
+            return { ...item, ...details };
+          } else {
+            console.log(`❌ ${details.name} doesn't qualify: type=${details.type}, seasons=${details.number_of_seasons}, episodes=${details.number_of_episodes}, status=${details.status}`);
+            return null;
+          }
+        } catch (error) {
+          console.error(`Error getting details for ${item.title}:`, error);
+          return null;
+        }
+      });
+      
+      const batchResults = await Promise.all(detailPromises);
+      detailedResults.push(...batchResults.filter(Boolean));
+      
+      console.log(`Processed ${i + batch.length}/${uniqueResults.length} items, found ${detailedResults.length} miniseries so far`);
+      
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    filteredResults = detailedResults;
+    console.log(`After miniseries filtering: ${filteredResults.length} items`);
   }
   
-  suggestionPool = uniqueResults;
+  // Fisher-Yates shuffle algorithm
+  for (let i = filteredResults.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [filteredResults[i], filteredResults[j]] = [filteredResults[j], filteredResults[i]];
+  }
+  
+  suggestionPool = filteredResults;
   console.log(`Built suggestion pool with ${suggestionPool.length} unique items (shuffled)`);
   
   // Debug: Check if "Presumed Innocent" is in the pool
@@ -323,6 +365,14 @@ const buildSuggestionPool = async (filters: Filters): Promise<ContentItem[]> => 
   );
   if (presumedInnocent) {
     console.log('🎯 Presumed Innocent found in suggestion pool:', presumedInnocent);
+  }
+  
+  const blackBird = suggestionPool.find(item => 
+    (item.title || item.original_title || item.original_name)?.toLowerCase().includes('black bird') || 
+    item.id === 155537
+  );
+  if (blackBird) {
+    console.log('🎯 Black Bird found in suggestion pool:', blackBird);
   }
   
   return suggestionPool;
