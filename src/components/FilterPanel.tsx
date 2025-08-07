@@ -16,7 +16,7 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
   const [yearFrom, setYearFrom] = useState("");
   const [yearTo, setYearTo] = useState("");
   const [language, setLanguage] = useState("en");
-  const [minRating, setMinRating] = useState(7);
+  const [minRating, setMinRating] = useState(8);
 
   const updateFilters = (type: string, genres: number[], from: string, to: string, lang: string, rating: number) => {
     onFiltersChange({
@@ -35,8 +35,8 @@ const FilterPanel = ({ onFiltersChange, onGetSuggestion, isLoading }: FilterPane
     setYearFrom("");
     setYearTo("");
     setLanguage("en");
-    setMinRating(7);
-    updateFilters("movie", [], "", "", "en", 7);
+    setMinRating(8);
+    updateFilters("movie", [], "", "", "en", 8);
   };
 
   const handleContentTypeChange = (value: string) => {

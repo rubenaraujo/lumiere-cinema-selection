@@ -28,7 +28,7 @@ const LumiereApp = () => {
     yearFrom: '',
     yearTo: '',
     language: 'en',
-    minRating: 7
+    minRating: 8
   });
 
   useEffect(() => {
@@ -161,6 +161,7 @@ const LumiereApp = () => {
                   <Button
                     variant="spotlight"
                     size="lg"
+                    className="lg:hidden"
                     onClick={handleGetSuggestion}
                     disabled={isLoading}
                   >
